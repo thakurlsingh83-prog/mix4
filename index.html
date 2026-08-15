@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Rules & Education Code Master Quiz</title>
+    <style>
+        :root {
+            --bg-dark: #050813;
+            --panel-bg: #0c1427;
+            --accent-gold: #ffd700;
+            --accent-cyan: #00e5ff;
+            --text-light: #f8fafc;
+            --correct-green: #10b981;
+            --wrong-red: #ef4444;
+            --border-glow: #1e3a8a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            background-image: radial-gradient(circle at center, #172554 0%, #050813 100%);
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 1250px;
+            background: var(--panel-bg);
+            border: 2px solid var(--accent-gold);
+            border-radius: 16px;
+            box-shadow: 0 0 35px rgba(255, 215, 0, 0.25);
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: 700px;
+            overflow: hidden;
+        }
+
+        /* Left Side Panel */
+        .left-panel {
+            background: rgba(5, 8, 19, 0.95);
+            border-right: 2px solid var(--border-glow);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-title {
+            color: var(--accent-gold);
+            font-size: 1.05rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--accent-gold);
+            padding-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .lifelines-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .lifeline-btn, .nav-btn {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--accent-cyan);
+            color: var(--text-light);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.92rem;
+        }
+
+        .lifeline-btn:hover:not(:disabled), .nav-btn:hover:not(:disabled) {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        .lifeline-btn:disabled, .nav-btn:disabled {
+            background: #1f2937;
+            border-color: #374151;
+            color: #6b7280;
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .nav-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .prev-btn {
+            border-color: #94a3b8;
+            background: linear-gradient(135deg, #334155, #1e293b);
+            color: #f1f5f9;
+        }
+
+        .prev-btn:hover:not(:disabled) {
+            background: #cbd5e1;
+            color: #000;
+            box-shadow: 0 0 12px #cbd5e1;
+        }
+
+        .next-btn {
+            border-color: var(--accent-gold);
+            background: linear-gradient(135deg, #78350f, #291203);
+            color: var(--accent-gold);
+        }
+
+        .next-btn:hover:not(:disabled) {
+            background: var(--accent-gold);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-gold);
+        }
+
+        .prize-tracker {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 300px;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 3px;
+            border: 1px solid var(--border-glow);
+            border-radius: 6px;
+            padding: 8px;
+            background: #030712;
+        }
+
+        .prize-step {
+            font-size: 0.76rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+        }
+
+        .prize-step.active {
+            background: var(--accent-gold);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--accent-gold);
+        }
+
+        .prize-step.passed {
+            color: var(--accent-cyan);
+        }
+
+        /* Main Game Area */
+        .main-panel {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .pattern-badge {
+            background: #1e3a8a;
+            color: #93c5fd;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #3b82f6;
+            text-transform: uppercase;
+        }
+
+        .question-box {
+            background: #090f1f;
+            border: 1px solid var(--border-glow);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+            box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.05);
+        }
+
+        .statements-list {
+            margin-top: 12px;
+            margin-left: 10px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 15px;
+        }
+
+        .option-btn {
+            background: #0f172a;
+            border: 1.5px solid #1e293b;
+            color: var(--text-light);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.96rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent-cyan);
+            background: #1e293b;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+        }
+
+        .option-btn.correct {
+            background: var(--correct-green) !important;
+            border-color: #34d399 !important;
+            color: white;
+            animation: pulse 1s infinite alternate;
+        }
+
+        .option-btn.wrong {
+            background: var(--wrong-red) !important;
+            border-color: #f87171 !important;
+            color: white;
+        }
+
+        @keyframes pulse {
+            from { box-shadow: 0 0 5px var(--correct-green); }
+            to { box-shadow: 0 0 20px #34d399; }
+        }
+
+        .explanation-box {
+            background: #040814;
+            border-left: 4px solid var(--accent-cyan);
+            padding: 14px 18px;
+            border-radius: 6px;
+            font-size: 0.92rem;
+            color: #f1f5f9;
+            display: none;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            border: 2px solid var(--accent-gold);
+            padding: 25px;
+            border-radius: 14px;
+            max-width: 520px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-title {
+            color: var(--accent-gold);
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+
+        .close-btn {
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 10px 26px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        @media (max-width: 880px) {
+            .quiz-container { grid-template-columns: 1fr; }
+            .left-panel { border-right: none; border-bottom: 2px solid var(--border-glow); }
+            .options-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <!-- Left Side Panel with Lifelines and Navigation Controls -->
+    <div class="left-panel">
+        <div class="panel-title">Hotseat Controls</div>
+        
+        <div class="lifelines-container">
+            <button class="lifeline-btn" id="life-5050" onclick="useFiftyFifty()">
+                <span>🌓</span> 50:50 Lifeline
+            </button>
+            <button class="lifeline-btn" id="life-poll" onclick="useAudiencePoll()">
+                <span>📊</span> Audience Poll
+            </button>
+            <button class="lifeline-btn" id="life-expert" onclick="useAskExpert()">
+                <span>🎓</span> Ask The Expert
+            </button>
+        </div>
+
+        <div class="nav-controls">
+            <button class="nav-btn prev-btn" id="prev-btn" onclick="prevQuestion()" disabled>
+                ◀ Back
+            </button>
+            <button class="nav-btn next-btn" id="next-btn" onclick="nextQuestion()" disabled>
+                Next ▶
+            </button>
+        </div>
+
+        <div class="panel-title" style="margin-top: 5px;">Prize Ladder</div>
+        <div class="prize-tracker" id="prize-tracker"></div>
+    </div>
+
+    <!-- Main Quiz Display Panel -->
+    <div class="main-panel">
+        <div>
+            <div class="question-header">
+                <div>
+                    <span id="q-number">Question 1 of 50</span>
+                    <span class="pattern-badge" id="pattern-badge">Pattern</span>
+                </div>
+                <span id="q-prize">Prize: ₹1,00,000</span>
+            </div>
+
+            <div class="question-box">
+                <div id="q-text">Loading question...</div>
+                <div class="statements-list" id="q-statements"></div>
+            </div>
+
+            <div class="options-grid" id="options-container"></div>
+        </div>
+
+        <div class="explanation-box" id="explanation-box">
+            <strong style="color: var(--accent-cyan);">Section Citation & Rule:</strong>
+            <div id="explanation-text" style="margin-top: 5px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Lifelines & Notifications -->
+<div class="modal" id="info-modal">
+    <div class="modal-content">
+        <div class="modal-title" id="modal-title">Notice</div>
+        <div class="modal-body" id="modal-body"></div>
+        <button class="close-btn" onclick="closeModal()">Continue</button>
+    </div>
+</div>
+
+<script>
+// 50 Questions covering CCL, EL, HPL, Commuted Leave, LND, CEA, HRA, GeM, Lien, and KVS Education Code
+const questions = [
+    {
+        type: "Standard",
+        section: "Child Care Leave (CCL)",
+        question: "What is the maximum period of Child Care Leave (CCL) that can be granted to an eligible female employee or single male employee during their entire service?",
+        statements: [],
+        options: ["365 days", "500 days", "730 days", "900 days"],
+        answer: 2,
+        citation: "CCL may be granted for a maximum period of 730 days during entire service for up to two eldest surviving children."
+    },
+    {
+        type: "Statement",
+        section: "Child Care Leave (CCL)",
+        question: "Consider the following statements regarding the age limit for availing Child Care Leave (CCL):",
+        statements: [
+            "a) For a normal child, CCL is admissible up to the age of 18 years.",
+            "b) In the case of a disabled child (with minimum disability of 40%), CCL is allowed irrespective of the age of the child."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Normal child age limit is 18 years or below; disabled child (min 40% disability) has no age ceiling."
+    },
+    {
+        type: "Fill in Blanks",
+        section: "CCL Spells",
+        question: "Under CCS Leave Rules, Child Care Leave (CCL) may not be granted in more than ________ spells in a calendar year for a single mother.",
+        statements: [],
+        options: ["3 spells", "4 spells", "6 spells", "Unlimited"],
+        answer: 2,
+        citation: "Single mothers are entitled to up to 6 spells of CCL in a calendar year (3 spells for others)."
+    },
+    {
+        type: "Matching",
+        section: "Leave Rules Matrix",
+        question: "Match List-I (Type of Leave) with List-II (Key Statutory Limitation):",
+        statements: [
+            "(p) Child Care Leave (CCL) ------- [1] Maximum 360 days in entire service",
+            "(q) Leave Not Due (LND) --------- [2] Maximum 730 days in entire service",
+            "(r) Child Adoption Leave -------- [3] Maximum 60 days in entire service",
+            "(s) LTC Leave Encashment -------- [4] Maximum 180 days per adoption"
+        ],
+        options: [
+            "p-2, q-1, r-4, s-3",
+            "p-1, q-2, r-3, s-4",
+            "p-2, q-4, r-1, s-3",
+            "p-4, q-1, r-2, s-3"
+        ],
+        answer: 0,
+        citation: "CCL = 730 days; LND = 360 days; Child Adoption Leave = 180 days; LTC Encashment = 60 days lifetime."
+    },
+    {
+        type: "Statement",
+        section: "CCL Salary & Minimum Period",
+        question: "Consider the following statements regarding Child Care Leave conditions:",
+        statements: [
+            "a) Effective from 13-06-2018, CCL may not be granted for a period of less than 5 days at a time.",
+            "b) 100% leave salary is paid for the first 365 days, while 80% salary is paid for the next 365 days."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "CCL minimum spell is 5 days from 13-06-2018; Leave salary is 100% for first 365 days and 80% for next 365 days."
+    },
+    {
+        type: "Standard",
+        section: "Earned Leave Advance Credit",
+        question: "How many days of Earned Leave (EL) are credited in advance to a regular non-vacation employee's leave account on the 1st of January and 1st of July each year?",
+        statements: [],
+        options: ["10 days each", "15 days each", "20 days each", "30 days each"],
+        answer: 1,
+        citation: "15 days advance credit of EL is given on 1st January and 1st July (total 30 days per year)."
+    },
+    {
+        type: "Statement",
+        section: "Earned Leave EOL Deduction",
+        question: "Consider the following statements regarding the reduction of Earned Leave advance credit:",
+        statements: [
+            "a) When an employee is on Extra Ordinary Leave (EOL) or dies non in a half year, the advance credit of EL for the next half year is reduced by 1/10th of such period.",
+            "b) For vacational staff, the advance credit of EL is reduced by 1/30th of EOL/dies non period."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Advance credit of EL is reduced by 1/10th of EOL/dies non for non-vacation staff, and 1/30th for vacational staff."
+    },
+    {
+        type: "Standard",
+        section: "Vacational Staff EL",
+        question: "For staff serving in a vacation department, what is the annual credit of Earned Leave (EL)?",
+        statements: [],
+        options: [
+            "10 days credited in full on 1st January",
+            "10 days credited in advance (5 days each on 1st Jan & 1st July)",
+            "20 days credited in advance (10 days each on 1st Jan & 1st July)",
+            "30 days credited in advance (15 days each on 1st Jan & 1st July)"
+        ],
+        answer: 1,
+        citation: "Vacational staff receive 10 days EL per year, credited as 5 days advance on 1st January and 5 days on 1st July."
+    },
+    {
+        type: "Fill in Blanks",
+        section: "EL Single Spell Limit",
+        question: "The maximum number of days of Earned Leave that can be granted at a time to a regular Central Government employee in India is ________ days.",
+        statements: [],
+        options: ["90", "120", "180", "300"],
+        answer: 2,
+        citation: "Under CCS Leave Rules, the maximum Earned Leave that can be availed of at one time in India is 180 days."
+    },
+    {
+        type: "Matching",
+        section: "Leave Encashment Limits",
+        question: "Match List-I (Occasion of Leave Encashment) with List-II (Maximum Admissible Days):",
+        statements: [
+            "(p) At the time of superannuation / retirement - [1] 10 days",
+            "(q) On resignation or quitting service --------- [2] 300 days (EL + HPL)",
+            "(r) On one occasion while availing LTC -------- [3] 60 days",
+            "(s) Lifetime ceiling for LTC encashment ------- [4] 150 days (EL only)"
+        ],
+        options: [
+            "p-2, q-4, r-1, s-3",
+            "p-1, q-2, r-3, s-4",
+            "p-2, q-1, r-4, s-3",
+            "p-4, q-2, r-1, s-3"
+        ],
+        answer: 0,
+        citation: "Retirement = 300 days; Resignation = 150 days; LTC per occasion = 10 days; Lifetime LTC = 60 days."
+    },
+    {
+        type: "Statement",
+        section: "Half Pay Leave Credit",
+        question: "Consider the following statements regarding Half Pay Leave (HPL):",
+        statements: [
+            "a) HPL is credited in advance at the rate of 10 days on 1st January and 1st July each year.",
+            "b) In the case of dies non in a half year, 1/18th of the period of dies non (subject to max 10 days) is deducted from the next half-year's HPL credit."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "HPL is credited as 10 days twice a year (20 days/year); 1/18th of dies non is deducted from future HPL credit."
+    },
+    {
+        type: "Standard",
+        section: "Commuted Leave Ratio",
+        question: "When Commuted Leave on medical certificate is granted, what is the debit ratio applied to the employee's Half Pay Leave (HPL) account?",
+        statements: [],
+        options: [
+            "Equal to the number of days of commuted leave taken",
+            "Twice the number of days of commuted leave taken",
+            "Half the number of days of commuted leave taken",
+            "No debit is made to the HPL account"
+        ],
+        answer: 1,
+        citation: "Commuted leave is full pay leave granted by debiting twice the amount of Half Pay Leave from the HPL account."
+    },
+    {
+        type: "Statement",
+        section: "Study Commuted Leave",
+        question: "Consider the following statements regarding Commuted Leave without medical certificate:",
+        statements: [
+            "a) Up to a maximum of 90 days full pay leave (180 HPL debited) can be granted in entire service for an approved course of study in public interest.",
+            "b) Up to a maximum of 60 days can be granted to a female government servant in continuation of Maternity Leave."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Commuted leave without MC is allowed up to 90 days for study in public interest, and up to 60 days following maternity/adoption leave."
+    },
+    {
+        type: "Standard",
+        section: "Leave Not Due (LND)",
+        question: "Under what condition is Leave Not Due (LND) sanctioned to a permanent employee?",
+        statements: [],
+        options: [
+            "Only when Earned Leave is exhausted, even if HPL is available",
+            "Only when no Half Pay Leave is at credit and the sanctioning authority is satisfied the employee will return to duty",
+            "As a matter of right on completing 10 years of service",
+            "Exclusively during Leave Preparatory to Retirement (LPR)"
+        ],
+        answer: 1,
+        citation: "LND is granted when no HPL is available and there is a reasonable prospect of the employee returning to duty after leave."
+    },
+    {
+        type: "Fill in Blanks",
+        section: "Children Education Allowance Rate",
+        question: "Under 7th CPC (w.e.f. 01-07-2017), the monthly rate of Children Education Allowance (CEA) per child is fixed at ________.",
+        statements: [],
+        options: ["Rs 1,500 p.m.", "Rs 2,000 p.m.", "Rs 2,250 p.m.", "Rs 2,500 p.m."],
+        answer: 2,
+        citation: "CEA is fixed at Rs 2,250 per month (Rs 27,000 annually) per child for up to two eldest surviving children."
+    },
+    {
+        type: "Matching",
+        section: "Allowance & Subsidy Matrix",
+        question: "Match List-I (Allowance / Scheme) with List-II (Prescribed Monthly Rate under 7th CPC):",
+        statements: [
+            "(p) Normal Children Education Allowance (CEA) - [1] Rs 6,750 p.m.",
+            "(q) CEA for Divyaang (disabled) child -------- [2] Rs 2,250 p.m.",
+            "(r) Hostel Subsidy per child ----------------- [3] Rs 4,500 p.m."
+        ],
+        options: [
+            "p-2, q-3, r-1",
+            "p-1, q-2, r-3",
+            "p-3, q-2, r-1",
+            "p-2, q-1, r-3"
+        ],
+        answer: 0,
+        citation: "CEA = Rs 2,250 p.m. (Rs 27,000 p.a.); Divyaang CEA = Rs 4,500 p.m. (Rs 54,000 p.a.); Hostel Subsidy = Rs 6,750 p.m. (Rs 81,000 p.a.)."
+    },
+    {
+        type: "Statement",
+        section: "CEA Rules & Ineligibility",
+        question: "Consider the following statements regarding Children Education Allowance (CEA):",
+        statements: [
+            "a) CEA is admissible even if the child fails in a particular class.",
+            "b) CEA is admissible during periods treated as 'dies non'."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 0,
+        citation: "Statement (a) is correct (CEA has no nexus with class performance/failure). Statement (b) is false because CEA is not admissible during dies non."
+    },
+    {
+        type: "Standard",
+        section: "Hostel Subsidy Distance",
+        question: "Hostel Subsidy is admissible only in respect of a child studying in a residential educational institution located at least how far from the residence of the government servant?",
+        statements: [],
+        options: ["At least 25 km", "At least 50 km", "At least 75 km", "At least 100 km"],
+        answer: 1,
+        citation: "Hostel subsidy requires the residential school to be located at least 50 km away from the government servant's residence."
+    },
+    {
+        type: "Statement",
+        section: "HRA City Classification",
+        question: "Consider the following statements regarding initial 7th CPC HRA rates w.e.f. 01-07-2017:",
+        statements: [
+            "a) For X, Y, and Z class cities, HRA rates were 24%, 16%, and 8% of Basic Pay respectively.",
+            "b) When Dearness Allowance (DA) crosses 50%, HRA rates revise to 30%, 20%, and 10% respectively."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Initial HRA was 24%/16%/8%, revising to 27%/18%/9% when DA crosses 25%, and 30%/20%/10% when DA crosses 50%."
+    },
+    {
+        type: "Standard",
+        section: "Minimum HRA Floors",
+        question: "What are the minimum floor rates of HRA for X, Y, and Z class cities under the 7th CPC?",
+        statements: [],
+        options: [
+            "Rs 5,400 (X), Rs 3,600 (Y), and Rs 1,800 (Z)",
+            "Rs 7,200 (X), Rs 3,600 (Y), and Rs 1,350 (Z)",
+            "Rs 6,000 (X), Rs 4,000 (Y), and Rs 2,000 (Z)",
+            "Rs 5,000 (X), Rs 3,000 (Y), and Rs 1,500 (Z)"
+        ],
+        answer: 0,
+        citation: "Minimum HRA floors are prescribed at Rs 5,400 for X, Rs 3,600 for Y, and Rs 1,800 for Z class cities."
+    },
+    {
+        type: "Fill in Blanks",
+        section: "GeM Direct Purchase",
+        question: "Under Government e-Marketplace (GeM) purchase procedure, Direct Purchase without comparative bidding is permissible for goods and services having a value up to ________.",
+        statements: [],
+        options: ["Rs 15,000", "Rs 25,000", "Rs 50,000", "Rs 1,00,000"],
+        answer: 1,
+        citation: "Direct purchase on GeM can be made for goods/services valued below/up to Rs 25,000."
+    },
+    {
+        type: "Matching",
+        section: "GeM Procurement Methods",
+        question: "Match List-I (Procurement Threshold on GeM) with List-II (Procurement Method):",
+        statements: [
+            "(p) Value below Rs 25,000 ---------------------- [1] Online Reverse Auction / Bidding",
+            "(q) Value above Rs 25,000 & up to Rs 5 Lakhs --- [2] Direct Purchase without quotation",
+            "(r) Value above Rs 5 Lakhs --------------------- [3] Direct Purchase of Automobiles",
+            "(s) Ceiling up to Rs 30 Lakhs ------------------ [4] L-1 comparison (min 3 manufacturers)"
+        ],
+        options: [
+            "p-2, q-4, r-1, s-3",
+            "p-1, q-2, r-3, s-4",
+            "p-2, q-1, r-4, s-3",
+            "p-4, q-2, r-1, s-3"
+        ],
+        answer: 0,
+        citation: "Below 25k = Direct; 25k-5L = L1 (3 quotes); Above 5L = Reverse Auction/Bidding; Automobiles = Direct up to 30L."
+    },
+    {
+        type: "Statement",
+        section: "GeM Reverse Auction",
+        question: "Consider the following statements regarding the Reverse Auction (RA) process on GeM:",
+        statements: [
+            "a) The bidder who quotes the lowest price in the initial technical round is automatically awarded the contract.",
+            "b) In Reverse Auction, technically qualified bidders compete in a second financial round, and the lowest evaluated bidder in this round gets the Award of Contract."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 1,
+        citation: "Statement (a) is false (initial lowest bidder does not get AOC directly); statement (b) correctly describes the competitive second financial bidding in RA."
+    },
+    {
+        type: "Standard",
+        section: "Definition of Lien (FR 9(13))",
+        question: "Under Fundamental Rule 9(13), what is the legal meaning of 'Lien'?",
+        statements: [],
+        options: [
+            "The right to draw annual increments in a pay scale",
+            "The title of a Government Servant to hold a regular post, whether permanent or temporary, immediately or on termination of absence",
+            "The relative seniority of an employee fixed at recruitment",
+            "The right to reside in government quarters"
+        ],
+        answer: 1,
+        citation: "FR 9(13) defines Lien as the title of a Government Servant to hold a regular post immediately or on termination of absence."
+    },
+    {
+        type: "Statement",
+        section: "Lien Retention & Deputation",
+        question: "Consider the following statements regarding the retention of Lien:",
+        statements: [
+            "a) A permanent government servant appointed to another Central/State Govt post retains a lien in their parent department for 2 years (extendable to 3 years in exceptional cases).",
+            "b) A temporary government servant is entitled to retain a lien for up to 1 year on selection to an outside post."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 0,
+        citation: "Statement (a) is correct. Statement (b) is false because temporary government servants must sever all connections; no lien is retained for temporary staff."
+    },
+    {
+        type: "Standard",
+        section: "Lien Inter-Organizational Scope",
+        question: "Between which of the following organizations is the facility of Lien NOT permissible?",
+        statements: [],
+        options: [
+            "Central Government to State Government",
+            "Central Government to Autonomous Body",
+            "Autonomous Body to Central Government",
+            "Central Government to Public Sector Undertaking (PSU)"
+        ],
+        answer: 3,
+        citation: "Lien is permissible between Central Govt, State Govt, and Autonomous Bodies, but NOT from Central Govt to a PSU."
+    },
+    {
+        type: "Statement",
+        section: "KVS Inception & Registration",
+        question: "Consider the following statements regarding the origin of Kendriya Vidyalaya Sangathan (KVS):",
+        statements: [
+            "a) The Scheme for Central Schools was approved by the Government of India in November 1962 based on the recommendation of the Second Central Pay Commission.",
+            "b) Kendriya Vidyalaya Sangathan was registered as an autonomous Society under the Societies Registration Act XXI of 1860 on 15th December, 1965."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Approved in Nov 1962 following Second Pay Commission; registered as an autonomous society on 15 December 1965."
+    },
+    {
+        type: "Standard",
+        section: "KVS Sangathan Authorities",
+        question: "Who functions as the Chairman of the Kendriya Vidyalaya Sangathan and its Board of Governors?",
+        statements: [],
+        options: [
+            "The Commissioner, KVS",
+            "The Minister / Minister of State in the Ministry of Education in charge of School Education",
+            "The Secretary, Ministry of Education",
+            "The Director, NCERT"
+        ],
+        answer: 1,
+        citation: "The Minister of State in the Ministry of Education in charge of school education is the Chairman of the Sangathan and Board of Governors."
+    },
+    {
+        type: "Fill in Blanks",
+        section: "VMC Meeting Quorum",
+        question: "Under the KVS Education Code, the Vidyalaya Management Committee (VMC) shall meet at least ________ times in a year, ordinarily in August, December, and February.",
+        statements: [],
+        options: ["2", "3", "4", "6"],
+        answer: 1,
+        citation: "Article 32 & 35 Note specify that the VMC shall meet at least three times in a school year."
+    },
+    {
+        type: "Matching",
+        section: "KVS Appointing Authorities",
+        question: "Match List-I (Post in Kendriya Vidyalaya) with List-II (Designated Appointing Authority):",
+        statements: [
+            "(p) Principal ------------------------------------- [1] Assistant Commissioner",
+            "(q) Post Graduate Teacher (PGT) ------------------- [2] Commissioner, KVS",
+            "(r) Trained Graduate Teacher (TGT) / PRT / UDC ---- [3] Principal of the Vidyalaya",
+            "(s) Class IV staff & Laboratory Assistants ------- [4] Commissioner, KVS"
+        ],
+        options: [
+            "p-2, q-4, r-1, s-3",
+            "p-1, q-2, r-3, s-4",
+            "p-4, q-1, r-2, s-3",
+            "p-2, q-1, r-4, s-3"
+        ],
+        answer: 0,
+        citation: "Article 43: Commissioner appoints Principals and PGTs; Assistant Commissioner appoints TGT/PRT/UDC; Principal appoints Class IV & Lab Assistants."
+    },
+    {
+        type: "Statement",
+        section: "VMC Composition & Tenure",
+        question: "Consider the following statements regarding the Vidyalaya Management Committee (VMC):",
+        statements: [
+            "a) The tenure of office of the members of a VMC is 3 years, and they are eligible for renomination.",
+            "b) The Principal of the Kendriya Vidyalaya acts as the Member-Secretary of the VMC."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Article 33 & 34: VMC member tenure is 3 years with renomination eligibility, and the Principal is Member-Secretary."
+    },
+    {
+        type: "Standard",
+        section: "VMC Appointment Sub-Committee",
+        question: "For a decision of the Vidyalaya Appointment Committee to be legally valid, what is the minimum attendance requirement out of the 5 key members?",
+        statements: [],
+        options: [
+            "All 5 members must be present",
+            "At least 4 members must be present, with Chairman, Education Officer, and Central Govt Officer invariably present",
+            "Any 3 members can take the decision",
+            "Only the Chairman and Principal presence is required"
+        ],
+        answer: 1,
+        citation: "Article 36: Decisions are valid only if at least 4 members are present, and members (i), (ii), and (iv) must invariably be present."
+    },
+    {
+        type: "Statement",
+        section: "KVS Admission Rules",
+        question: "Consider the following statements regarding admission priorities in Kendriya Vidyalayas:",
+        statements: [
+            "a) Children of transferable Defence personnel and transferable Central Government employees receive top priorities.",
+            "b) Admission to Class I is made strictly on the basis of a formal written academic admission test."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 0,
+        citation: "Statement (a) is correct. Statement (b) is false because Article 91 explicitly states admission to Class I shall not be based on any academic test."
+    },
+    {
+        type: "Standard",
+        section: "KVS Class IX Science Admission",
+        question: "Under Article 92 of the KVS Education Code, what is the minimum qualifying score in the aggregate of Science and Mathematics in Class VIII required for admission to the Science Group in Class IX?",
+        statements: [],
+        options: ["40% marks", "45% marks", "50% marks", "60% marks"],
+        answer: 2,
+        citation: "Article 92 mandates securing not less than 50% marks in the aggregate of Science and Mathematics in Class VIII for Science Group admission."
+    },
+    {
+        type: "Statement",
+        section: "KVS Attendance & Condonation",
+        question: "Consider the following statements regarding examination attendance rules in Kendriya Vidyalayas:",
+        statements: [
+            "a) A student must have a minimum of 75% attendance of the academic session to appear in the Annual Examination.",
+            "b) The Principal is empowered to condone shortage in attendance up to 15% (permitting students with 60% attendance on genuine grounds)."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Article 111 prescribes 75% minimum attendance, and authorizes the Principal to condone shortages up to 15% (minimum 60%)."
+    },
+    {
+        type: "Standard",
+        section: "KVS Examination Weightage",
+        question: "Under Article 115, what is the distribution of the 100 marks for final promotion assessment across the academic session for Classes I to X?",
+        statements: [],
+        options: [
+            "Periodical Tests (10), Class-work & Assignments (10), Half-Yearly Exam (20), Annual Exam (60)",
+            "Periodical Tests (20), Half-Yearly Exam (30), Annual Exam (50)",
+            "Unit Tests (25), Half-Yearly Exam (25), Annual Exam (50)",
+            "Classwork (20), Half-Yearly Exam (40), Annual Exam (40)"
+        ],
+        answer: 0,
+        citation: "Article 115 assigns 10 marks for Periodical tests, 10 for Classwork/assignments, 20 for Half-Yearly exam, and 60 for Annual exam."
+    },
+    {
+        type: "Fill in Blanks",
+        section: "KVS Annual Working Days",
+        question: "According to Article 77 of the KVS Education Code, the total number of working days during the academic year shall be ________ days, comprising 1,200 instructional hours.",
+        statements: [],
+        options: ["200", "210", "220", "240"],
+        answer: 2,
+        citation: "Article 77 prescribes 220 working days comprising a total of 1,200 instructional hours in an academic year."
+    },
+    {
+        type: "Statement",
+        section: "KVS Pass Percentage Criteria",
+        question: "Consider the following statements regarding promotion rules in Classes I to X:",
+        statements: [
+            "a) A student must obtain not less than 33% marks in each subject and 40% in the aggregate to pass.",
+            "b) In Classes I to VIII, a candidate failing in one or two subjects may be promoted if they secure at least 25% in the failed subjects while maintaining a 40% aggregate."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Article 119 & 120 specify 33% subject pass and 40% aggregate, with concession to 25% in up to 2 subjects for Classes I-VIII."
+    },
+    {
+        type: "Standard",
+        section: "Primary Department Supervisor",
+        question: "Under Article 52, a Primary Teacher may be appointed as 'Supervisor' with a special pay of Rs 25/- p.m. in a Vidyalaya where:",
+        statements: [],
+        options: [
+            "Total student strength in the school exceeds 700, or primary classes are in a separate building/shift",
+            "Total student strength exceeds 500",
+            "There are more than 10 sections in primary classes",
+            "The school has no Vice-Principal"
+        ],
+        answer: 0,
+        citation: "Article 52 permits appointing a Primary Department Supervisor when student strength exceeds 700 or classes run in separate shifts/buildings."
+    },
+    {
+        type: "Statement",
+        section: "Teacher Code of Conduct - Private Tuition",
+        question: "Consider the following statements regarding the Code of Conduct for Teachers under Article 55:",
+        statements: [
+            "a) No teacher shall give private tuition to pupils or accept any remunerative job without written permission from the competent authority.",
+            "b) A teacher can freely accept gifts exceeding Rs 500/- from pupils on Teachers' Day without prior sanction."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 0,
+        citation: "Statement (a) is correct (Article 55(19)). Statement (b) is false because gifts from students/parents are banned; social gifts on occasions cannot exceed Rs 25/-."
+    },
+    {
+        type: "Standard",
+        section: "HRA During Temporary Transfer",
+        question: "During a temporary transfer not exceeding 180 days, how is House Rent Allowance (HRA) regulated?",
+        statements: [],
+        options: [
+            "Allowed at the old headquarters rate for the first 90 days, and with reference to the new headquarters rate after 90 days",
+            "Allowed at the new headquarters rate from the first day",
+            "Withheld entirely for the entire 180 days",
+            "Paid at double the rate for the entire duration"
+        ],
+        answer: 0,
+        citation: "HRA on temporary transfer is drawn at old HQ rates for the first 90 days and at new HQ rates thereafter."
+    },
+    {
+        type: "Statement",
+        section: "HRA in Shared Accommodation",
+        question: "Consider the following statements regarding HRA on sharing accommodation:",
+        statements: [
+            "a) If husband and wife (both Government employees) share private rented accommodation, both are eligible to draw HRA separately.",
+            "b) HRA is admissible if an employee shares rent-free government accommodation allotted to another government servant."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 0,
+        citation: "Statement (a) is correct. Statement (b) is false because HRA is not admissible if sharing rent-free government accommodation."
+    },
+    {
+        type: "Standard",
+        section: "North-East Region Double HRA",
+        question: "Central Government employees transferred to the North-East Region, Andaman & Nicobar, Lakshadweep, or Ladakh from outside who keep their families at the old station in owned/rented houses are entitled to:",
+        statements: [],
+        options: [
+            "HRA at the old station rate only",
+            "HRA at the new place of posting only",
+            "Benefit of two HRAs (admissible at old station as well as at the new place of posting if living in hired accommodation)",
+            "Special compensatory allowance of 50% basic pay in lieu of HRA"
+        ],
+        answer: 2,
+        citation: "Employees posted to NE/Islands/Ladakh keeping families behind are entitled to the benefit of two HRAs."
+    },
+    {
+        type: "Statement",
+        section: "Foreign Travel during CCL",
+        question: "Consider the following statements regarding Child Care Leave (CCL) rules:",
+        statements: [
+            "a) An employee on CCL may proceed on foreign travel provided prior clearance from appropriate competent authorities is obtained.",
+            "b) Sundays and intervening gazetted holidays falling during CCL are excluded and not counted as leave."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 0,
+        citation: "Statement (a) is correct. Statement (b) is false because intervening holidays count as CCL, exactly as in the case of Earned Leave."
+    },
+    {
+        type: "Standard",
+        section: "Child Adoption Leave Conditions",
+        question: "Under CCS Leave Rules, Child Adoption Leave of 180 days is admissible to a female government employee who has:",
+        statements: [],
+        options: [
+            "No living children only",
+            "Less than two surviving children, on adopting a child below 1 year of age",
+            "Less than three surviving children, regardless of child's age",
+            "Completed at least 5 years of regular government service"
+        ],
+        answer: 1,
+        citation: "Child Adoption Leave is admissible to female employees with less than two surviving children adopting a child below 1 year."
+    },
+    {
+        type: "Statement",
+        section: "Commuted Leave Recovery on Resignation",
+        question: "Consider the following statements regarding Commuted Leave:",
+        statements: [
+            "a) If an employee on Commuted Leave resigns or retires voluntarily without returning to duty, the commuted leave is treated as HPL and excess leave salary is recovered.",
+            "b) Such recovery is waived if the retirement is due to ill-health incapacitating the employee for further service or in the event of death."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Commuted leave is converted back to HPL with salary recovery upon resignation, except in cases of medical invalidation or death."
+    },
+    {
+        type: "Standard",
+        section: "Dies Non HPL Debit Ratio",
+        question: "If an employee accumulates 36 days of dies non in the first half of the year (January 1 to June 30), by how many days will their HPL credit on July 1 be reduced?",
+        statements: [],
+        options: ["1 day", "2 days", "3.6 days", "4 days"],
+        answer: 1,
+        citation: "HPL deduction is 1/18th of dies non: $36 / 18 = 2$ days deducted from the 10 days advance credit, leaving 8 days."
+    },
+    {
+        type: "Statement",
+        section: "KVS Code on Political Activity",
+        question: "Consider the following statements regarding the Code of Conduct for Teachers under Article 55:",
+        statements: [
+            "a) No teacher shall be a member of any political party or carry on activities in support of any political party.",
+            "b) A teacher must resign from their job before standing for election to the State Legislature or Parliament."
+        ],
+        options: ["Only a", "Only b", "Both a and b", "Neither a nor b"],
+        answer: 2,
+        citation: "Article 55(5) & (7) strictly prohibit political party membership and mandate resignation before contesting legislative elections."
+    },
+    {
+        type: "Standard",
+        section: "KVS Local Holidays",
+        question: "Under Article 31(A)(18) of the Education Code, how many local holidays is the Principal authorised to grant to the Vidyalaya in a school year?",
+        statements: [],
+        options: ["Up to 3 days", "Up to 5 days", "Up to 7 days", "Up to 10 days"],
+        answer: 2,
+        citation: "Article 31(A)(18) empowers the Principal to grant local holidays not exceeding 7 days in a school year."
+    },
+    {
+        type: "Standard",
+        section: "KVS Campus Land Norm",
+        question: "According to Chapter XVI (Land and Building) of the KVS Education Code, what is the standard land area required for a suitable Kendriya Vidyalaya campus?",
+        statements: [],
+        options: ["About 5 acres", "About 10 acres", "About 15 acres", "About 25 acres"],
+        answer: 2,
+        citation: "Article 167 specifies an area of about 15 acres of land as necessary for a standard Kendriya Vidyalaya campus."
+    }
+];
+
+const prizeLadder = [
+    "₹1,00,000", "₹2,00,000", "₹5,00,000", "₹10,00,000", "₹25,00,000",
+    "₹50,00,000", "₹1 Crore", "₹2 Crore", "₹5 Crore", "₹10 Crore",
+    "₹12 Crore", "₹15 Crore", "₹18 Crore", "₹20 Crore", "₹25 Crore",
+    "₹30 Crore", "₹35 Crore", "₹40 Crore", "₹45 Crore", "₹50 Crore",
+    "₹55 Crore", "₹60 Crore", "₹65 Crore", "₹70 Crore", "₹75 Crore",
+    "₹80 Crore", "₹85 Crore", "₹90 Crore", "₹95 Crore", "₹100 Crore",
+    "₹105 Crore", "₹110 Crore", "₹115 Crore", "₹120 Crore", "₹125 Crore",
+    "₹130 Crore", "₹135 Crore", "₹140 Crore", "₹145 Crore", "₹150 Crore",
+    "₹155 Crore", "₹160 Crore", "₹165 Crore", "₹170 Crore", "₹175 Crore",
+    "₹180 Crore", "₹185 Crore", "₹190 Crore", "₹195 Crore", "₹200 Crore"
+];
+
+let currentQ = 0;
+let userAnswers = new Array(questions.length).fill(null);
+let lifelines = { fiftyFifty: true, poll: true, expert: true };
+
+function initQuiz() {
+    renderPrizeTracker();
+    loadQuestion();
+}
+
+function renderPrizeTracker() {
+    const container = document.getElementById("prize-tracker");
+    container.innerHTML = "";
+    prizeLadder.forEach((prize, index) => {
+        const step = document.createElement("div");
+        step.className = `prize-step ${index === currentQ ? 'active' : (index < currentQ ? 'passed' : '')}`;
+        step.innerHTML = `<span>Q${index + 1}</span> <span>${prize}</span>`;
+        container.appendChild(step);
+    });
+}
+
+function loadQuestion() {
+    const q = questions[currentQ];
+    document.getElementById("q-number").innerText = `Question ${currentQ + 1} of 50 (${q.section})`;
+    document.getElementById("pattern-badge").innerText = `${q.type} Pattern`;
+    document.getElementById("q-prize").innerText = `Prize: ${prizeLadder[currentQ]}`;
+    document.getElementById("q-text").innerText = q.question;
+    
+    const stmtContainer = document.getElementById("q-statements");
+    stmtContainer.innerHTML = "";
+    if (q.statements && q.statements.length > 0) {
+        q.statements.forEach(stmt => {
+            const div = document.createElement("div");
+            div.innerText = stmt;
+            stmtContainer.appendChild(div);
+        });
+    }
+
+    const optContainer = document.getElementById("options-container");
+    optContainer.innerHTML = "";
+    
+    const isAnswered = userAnswers[currentQ] !== null;
+    const selectedIdx = userAnswers[currentQ];
+
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.id = `opt-${idx}`;
+        btn.innerText = `${String.fromCharCode(65 + idx)}. ${opt}`;
+        
+        if (isAnswered) {
+            btn.disabled = true;
+            if (idx === q.answer) {
+                btn.classList.add("correct");
+            } else if (idx === selectedIdx) {
+                btn.classList.add("wrong");
+            }
+        } else {
+            btn.onclick = () => selectOption(idx);
+        }
+        optContainer.appendChild(btn);
+    });
+
+    const expBox = document.getElementById("explanation-box");
+    const expText = document.getElementById("explanation-text");
+    if (isAnswered) {
+        expText.innerText = q.citation;
+        expBox.style.display = "block";
+    } else {
+        expBox.style.display = "none";
+    }
+
+    // Navigation buttons state
+    document.getElementById("prev-btn").disabled = (currentQ === 0);
+    document.getElementById("next-btn").disabled = !isAnswered;
+
+    renderPrizeTracker();
+}
+
+function selectOption(selectedIdx) {
+    if (userAnswers[currentQ] !== null) return;
+    
+    userAnswers[currentQ] = selectedIdx;
+    const q = questions[currentQ];
+    const correctIdx = q.answer;
+
+    const optBtns = document.querySelectorAll(".option-btn");
+    optBtns.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === correctIdx) {
+            btn.classList.add("correct");
+        } else if (idx === selectedIdx) {
+            btn.classList.add("wrong");
+        }
+    });
+
+    const expBox = document.getElementById("explanation-box");
+    const expText = document.getElementById("explanation-text");
+    expText.innerText = q.citation;
+    expBox.style.display = "block";
+
+    document.getElementById("next-btn").disabled = false;
+    renderPrizeTracker();
+}
+
+function prevQuestion() {
+    if (currentQ > 0) {
+        currentQ--;
+        loadQuestion();
+    }
+}
+
+function nextQuestion() {
+    if (currentQ < questions.length - 1) {
+        currentQ++;
+        loadQuestion();
+    } else {
+        showModal("Grand Victory!", "Congratulations! You have completed all 50 questions across CCL, EL, HPL, Commuted Leave, LND, CEA, HRA, GeM, Lien, and KVS Education Code, winning the top prize of ₹200 Crore!");
+    }
+}
+
+function useFiftyFifty() {
+    if (!lifelines.fiftyFifty || userAnswers[currentQ] !== null) return;
+    lifelines.fiftyFifty = false;
+    document.getElementById("life-5050").disabled = true;
+
+    const correctIdx = questions[currentQ].answer;
+    let removed = 0;
+    for (let i = 0; i < 4; i++) {
+        if (i !== correctIdx && removed < 2) {
+            const el = document.getElementById(`opt-${i}`);
+            if (el) el.style.visibility = "hidden";
+            removed++;
+        }
+    }
+}
+
+function useAudiencePoll() {
+    if (!lifelines.poll || userAnswers[currentQ] !== null) return;
+    lifelines.poll = false;
+    document.getElementById("life-poll").disabled = true;
+
+    const correctIdx = questions[currentQ].answer;
+    let votes = [10, 10, 10, 10];
+    votes[correctIdx] = 70;
+
+    let resultMsg = "Audience Poll Verdict:<br><br>";
+    votes.forEach((v, i) => {
+        resultMsg += `<strong>Option ${String.fromCharCode(65 + i)}:</strong> ${v}%<br>`;
+    });
+
+    showModal("Audience Poll", resultMsg);
+}
+
+function useAskExpert() {
+    if (!lifelines.expert || userAnswers[currentQ] !== null) return;
+    lifelines.expert = false;
+    document.getElementById("life-expert").disabled = true;
+
+    const correctOption = String.fromCharCode(65 + questions[currentQ].answer);
+    const sec = questions[currentQ].section;
+    
+    showModal("Ask The Expert", `Expert Guidance: "According to the statutory rules under <strong>${sec}</strong>, the correct answer is <strong>Option ${correctOption}</strong>."`);
+}
+
+function showModal(title, body) {
+    document.getElementById("modal-title").innerHTML = title;
+    document.getElementById("modal-body").innerHTML = body;
+    document.getElementById("info-modal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("info-modal").style.display = "none";
+}
+
+window.onload = initQuiz;
+</script>
+</body>
+</html>
